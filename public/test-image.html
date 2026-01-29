@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Rasm Generator - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .result img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 AI Rasm Generator</h1>
+        <p class="subtitle">Replicate Flux Schnell orqali rasm yarating</p>
+
+        <div class="info-box">
+            <h3>ℹ️ Ma'lumot</h3>
+            <p>
+                <strong>Model:</strong> Flux Schnell (tez va bepul tier mavjud)<br>
+                <strong>Narx:</strong> ~$0.003 per rasm (juda arzon!)<br>
+                <strong>Tezlik:</strong> 2-5 soniya
+            </p>
+        </div>
+
+        <form id="imageForm">
+            <div class="form-group">
+                <label for="prompt">Rasm tavsifi (Prompt) *</label>
+                <textarea 
+                    id="prompt" 
+                    placeholder="Masalan: A beautiful sunset over mountains, digital art style"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="aspectRatio">Nisbat (Aspect Ratio)</label>
+                <select id="aspectRatio">
+                    <option value="1:1">1:1 (Kvadrat)</option>
+                    <option value="16:9">16:9 (Keng)</option>
+                    <option value="9:16">9:16 (Vertikal)</option>
+                    <option value="4:3">4:3 (Standart)</option>
+                    <option value="3:4">3:4 (Portret)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="outputFormat">Format</label>
+                <select id="outputFormat">
+                    <option value="webp">WebP (tavsiya)</option>
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                </select>
+            </div>
+
+            <button type="submit" id="generateBtn">
+                🎨 Rasm Yaratish
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Rasm generatsiya qilinmoqda...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('imageForm');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const result = document.getElementById('result');
+        const generateBtn = document.getElementById('generateBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Reset
+            loading.classList.add('active');
+            error.classList.remove('active');
+            result.classList.remove('active');
+            generateBtn.disabled = true;
+
+            const formData = {
+                prompt: document.getElementById('prompt').value,
+                aspectRatio: document.getElementById('aspectRatio').value,
+                outputFormat: document.getElementById('outputFormat').value,
+                outputQuality: 80,
+                numOutputs: 1
+            };
+
+            try {
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Xatolik yuz berdi');
+                }
+
+                if (data.success && data.images) {
+                    // Rasmlarni ko'rsatish
+                    result.innerHTML = data.images.map((url, index) => `
+                        <div>
+                            <img src="${url}" alt="Generated image ${index + 1}">
+                            <a href="${url}" target="_blank" style="display: block; text-align: center; color: #667eea; text-decoration: none; font-weight: 600;">
+                                📥 Yuklab olish
+                            </a>
+                        </div>
+                    `).join('');
+                    result.classList.add('active');
+                } else {
+                    throw new Error('Rasm generatsiya qilinmadi');
+                }
+
+            } catch (err) {
+                error.textContent = '❌ Xatolik: ' + err.message;
+                error.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

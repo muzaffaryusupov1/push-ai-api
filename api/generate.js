@@ -1,4 +1,23 @@
+// Helper function to parse request body
+async function parseBody(req) {
+    if (req.body) return req.body; // Vercel already parses it
+
+    // For Node.js HTTP server
+    return new Promise((resolve) => {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                resolve(JSON.parse(body));
+            } catch {
+                resolve({});
+            }
+        });
+    });
+}
+
 export default async function handler(req, res) {
+
     // --- CORS ---
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
@@ -19,7 +38,8 @@ export default async function handler(req, res) {
         product = "",
         audience = "",
         constraints = "120-160 belgi, 1-2 emoji"
-    } = req.body || {};
+    } = await parseBody(req) || {};
+
 
     const prompt = `
 Siz push notification copywriterisiz.

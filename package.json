@@ -1,5 +1,17 @@
 {
   "name": "push-ai-api",
+  "version": "1.0.0",
+  "description": "AI-powered text and image generation API",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
 }
