@@ -1,4 +1,14 @@
 export default async function handler(req, res) {
+    // --- CORS sozlamalari ---
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // OPTIONS so'rovini (preflight) darhol qaytarish
+    if (req.method === "OPTIONS") {
+        return res.status(204).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Only POST requests allowed' });
     }
@@ -13,11 +23,11 @@ export default async function handler(req, res) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "black-forest-labs/FLUX.1-schnell", // Eng tezkor va sifatli model
+                model: "black-forest-labs/FLUX.1-schnell",
                 prompt: prompt,
                 image_size: "1024x1024",
                 batch_size: 1,
-                num_inference_steps: 4 // Tezroq natija olish uchun
+                num_inference_steps: 4
             })
         });
 
