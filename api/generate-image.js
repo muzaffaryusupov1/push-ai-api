@@ -1,23 +1,4 @@
-// Helper function to parse request body
-async function parseBody(req) {
-    if (req.body) return req.body; // Vercel already parses it
-
-    // For Node.js HTTP server
-    return new Promise((resolve) => {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', () => {
-            try {
-                resolve(JSON.parse(body));
-            } catch {
-                resolve({});
-            }
-        });
-    });
-}
-
 export default async function handler(req, res) {
-
     // --- CORS ---
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
@@ -37,24 +18,22 @@ export default async function handler(req, res) {
         outputFormat = "webp",
         outputQuality = 80,
         numOutputs = 1
-    } = await parseBody(req) || {};
-
+    } = req.body || {};
 
     if (!prompt) {
         return res.status(400).json({ error: "Prompt majburiy" });
     }
 
     try {
-        // Replicate API bilan rasm generatsiya qilish
         const response = await fetch("https://api.replicate.com/v1/predictions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${process.env.REPLICATE_API_KEY}`,
-                "Prefer": "wait" // Natijani kutish
+                "Prefer": "wait"
             },
             body: JSON.stringify({
-                version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc", // Flux Schnell (tez va bepul)
+                version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
                 input: {
                     prompt: prompt,
                     aspect_ratio: aspectRatio,
@@ -75,17 +54,15 @@ export default async function handler(req, res) {
 
         const prediction = await response.json();
 
-        // Agar rasm tayyor bo'lsa
         if (prediction.status === "succeeded") {
             return res.status(200).json({
                 success: true,
-                images: prediction.output, // Array of image URLs
+                images: prediction.output,
                 id: prediction.id,
                 model: "flux-schnell"
             });
         }
 
-        // Agar kutish kerak bo'lsa (Prefer: wait bo'lmasa)
         if (prediction.status === "starting" || prediction.status === "processing") {
             return res.status(202).json({
                 success: false,
@@ -96,7 +73,6 @@ export default async function handler(req, res) {
             });
         }
 
-        // Xatolik bo'lsa
         return res.status(500).json({
             error: "Generatsiya muvaffaqiyatsiz",
             status: prediction.status,

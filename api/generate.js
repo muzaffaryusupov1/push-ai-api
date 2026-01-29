@@ -1,23 +1,4 @@
-// Helper function to parse request body
-async function parseBody(req) {
-    if (req.body) return req.body; // Vercel already parses it
-
-    // For Node.js HTTP server
-    return new Promise((resolve) => {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', () => {
-            try {
-                resolve(JSON.parse(body));
-            } catch {
-                resolve({});
-            }
-        });
-    });
-}
-
 export default async function handler(req, res) {
-
     // --- CORS ---
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
@@ -26,7 +7,7 @@ export default async function handler(req, res) {
     if (req.method === "OPTIONS") return res.status(204).end();
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    // --- Minimal himoya (ixtiyoriy) ---
+    // --- Himoya (ixtiyoriy) ---
     const auth = req.headers.authorization || "";
     const expected = process.env.DEMO_SECRET ? `Bearer ${process.env.DEMO_SECRET}` : "";
     if (expected && auth !== expected) return res.status(401).json({ error: "Unauthorized" });
@@ -38,8 +19,7 @@ export default async function handler(req, res) {
         product = "",
         audience = "",
         constraints = "120-160 belgi, 1-2 emoji"
-    } = await parseBody(req) || {};
-
+    } = req.body || {};
 
     const prompt = `
 Siz push notification copywriterisiz.
