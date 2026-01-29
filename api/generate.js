@@ -44,7 +44,7 @@ Cheklov: ${constraints}
             body: JSON.stringify({
                 model: "gpt-4.1-mini",
                 input: prompt,
-                response_format: { type: "json_object" }
+                text: { format: { type: "json_object" } }
             })
         });
 
