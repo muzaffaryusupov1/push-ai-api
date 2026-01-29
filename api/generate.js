@@ -35,28 +35,32 @@ Cheklov: ${constraints}
 `.trim();
 
     try {
-        const r = await fetch("https://api.openai.com/v1/responses", {
+        const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
             },
             body: JSON.stringify({
-                model: "gpt-4.1-mini",
-                input: prompt,
-                text: { format: { type: "json_object" } }
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.7
             })
         });
 
         if (!r.ok) {
             const text = await r.text();
-            return res.status(500).json({ error: "OpenAI error", details: text });
+            return res.status(500).json({ error: "Groq API error", details: text });
         }
 
         const data = await r.json();
-        const outputText =
-            data.output_text ||
-            (data.output?.[0]?.content?.[0]?.text ?? "");
+        const outputText = data.choices?.[0]?.message?.content ?? "";
 
         let parsed;
         try { parsed = JSON.parse(outputText); }
